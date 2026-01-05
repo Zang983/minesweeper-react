@@ -1,10 +1,11 @@
 import cellNeighbors from "./cellNeighbors";
-import type {cell} from "./types.ts";
+import type {cellType} from "./types.ts";
 
 function gridGenerator(indexClicked: number, height: number, width: number, mineCount: number) {
-    const grid: cell[] = []
+    const grid: cellType[] = []
+
     const minesPositions: number[] = []
-    /* Gestion des erreurs possible */
+    /* Gestion des erreurs possibles */
     if (height <= 0 || width <= 0 || mineCount <= 0) {
         throw new Error("Grid dimensions and mine count must be positive integers");
     }
@@ -31,6 +32,7 @@ function gridGenerator(indexClicked: number, height: number, width: number, mine
             isMine: minesPositions.includes(i),
             isFlagged: 0,
             adjacentMineCount: 0,
+            isSuggested: false
         }
         for (const neighbor of cellNeighbors(i, height, width)) {
             if (minesPositions.includes(neighbor))
