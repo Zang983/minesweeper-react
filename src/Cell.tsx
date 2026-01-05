@@ -3,7 +3,7 @@ import {useGameStore} from "../utils/store.ts";
 
 type CellProps = {
     index: number;
-    handleLeftClick: (index: number,chordMode?:boolean) => void;
+    handleLeftClick: (index: number, chordMode?: boolean) => void;
 }
 
 const Cell = memo(({index, handleLeftClick}: CellProps) => {
@@ -41,13 +41,8 @@ const Cell = memo(({index, handleLeftClick}: CellProps) => {
     const isFlagged = cell?.isFlagged === 1;
     const isQuestion = cell?.isFlagged === 2;
 
-    // CAS SPÉCIAL : Erreur de drapeau à la défaite (Case marquée mais sans mine)
     const isFlagError = isLost && !isMine && isFlagged;
-
-    // CAS SPÉCIAL : Mine à révéler à la défaite (Case non révélée, avec mine, non marquée)
     const shouldShowHiddenMine = isLost && isMine && !isRevealed && !isFlagged;
-
-    // État visuel "enfoncé"
     const shouldShowAsPressed = cell?.isSuggested && !isFlagged && !isQuestion;
 
     return (
@@ -72,35 +67,28 @@ const Cell = memo(({index, handleLeftClick}: CellProps) => {
             onMouseLeave={() => {
                 useGameStore.getState().clearSuggestedCells()
             }}
-            className={`
-                w-10 h-10 flex items-center justify-center select-none font-black text-2xl
-                relative -mr-[1px] -mb-[1px] box-border
+
+            className={`aspect-square flex flex-1 items-center justify-center select-none font-black text-2xl
+                relative -mr-px -mb-px box-border border-[#808080] border
                 ${isRevealed || shouldShowAsPressed
-                ? "bg-[#c0c0c0] border border-[#808080]"
-                : "bg-[#c0c0c0] border-t-[3px] border-l-[3px] border-white border-r-[3px] border-b-[3px] border-r-[#808080] border-b-[#808080]"}
+                ? "bg-[#c0c0c0]"
+                : "bg-[#c0c0c0] shadow-[inset_3px_3px_0px_#fff,inset_-3px_-3px_0px_#808080]"}
                 ${isRevealed && isMine ? "bg-red-600!" : ""}
             `}
         >
-            {/* 1. Affichage du chiffre : UNIQUEMENT si la case est réellement révélée et n'est pas une mine */}
+
             {isRevealed && !isMine && cell.adjacentMineCount > 0 && (
                 <span className={getNumberColor(cell.adjacentMineCount)}>
                     {cell.adjacentMineCount}
                 </span>
             )}
 
-            {/* 2. Affichage des éléments sur case NON révélée */}
+
             {!isRevealed && (
                 <>
-                    {/* Drapeau (caché si c'est une erreur à la défaite) */}
                     {isFlagged && !isFlagError && "🚩"}
-
-                    {/* Point d'interrogation */}
                     {isQuestion && "❓"}
-
-                    {/* Mines cachées révélées à la défaite */}
                     {shouldShowHiddenMine && "💣"}
-
-                    {/* Erreur de drapeau à la défaite */}
                     {isFlagError && (
                         <div className="relative flex items-center justify-center w-full h-full">
                             <span className="opacity-40">💣</span>
@@ -110,7 +98,7 @@ const Cell = memo(({index, handleLeftClick}: CellProps) => {
                 </>
             )}
 
-            {/* 3. Mine sur la case qui a causé la perte (Déjà révélée par la logique) */}
+
             {isRevealed && isMine && "💣"}
         </div>
     );

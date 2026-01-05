@@ -24,9 +24,10 @@ function Timer() {
         }
     }, [status]);
     
+    const time = gameStore().timer.toString().padStart(3, '0');
     return (
-        <div>
-            {gameStore().timer}
+        <div className="text-[#ff0000] font-mono text-3xl leading-none tracking-widest">
+            {time}
         </div>
     );
 }

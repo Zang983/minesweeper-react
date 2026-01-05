@@ -2,11 +2,12 @@ import {create} from 'zustand'
 import type {GameStatus, Store} from "./types";
 import gridGenerator from "./gridGenerator.ts";
 import cellNeighbors from "./cellNeighbors.ts";
+import {gameConfigs} from "./gameConfigs.ts";
 
 export const useGameStore = create<Store>()((set) => ({
-    height: 10,
-    width: 10,
-    mineCount: 10,
+    height: gameConfigs.intermediate.height,
+    width: gameConfigs.intermediate.width,
+    mineCount: gameConfigs.intermediate.mineCount,
     caseRevealed: 0,
     status: "idle",
     flagCount: 0,
