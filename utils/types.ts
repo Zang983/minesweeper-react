@@ -5,7 +5,7 @@ export type Store = {
     caseRevealed: number,
     status: GameStatus,
     flagCount: number,
-    grid: cell[] | null,
+    grid: cellType[] | null,
     lastIndexClicked: null | number,
     suggestedCells: number[],
     leftClickOn:boolean,
@@ -19,7 +19,8 @@ export type Store = {
     resetGrid: () => void,
     suggestCells: (index: number) => void
     clearSuggestedCells: () => void,
-    setOnLeftClickOn: (value:boolean) => void
+    setOnLeftClickOn: (value:boolean) => void,
+    chordMode:(index:number)=>void
 }
 
 export type gridOptions = {
@@ -28,7 +29,7 @@ export type gridOptions = {
     mineCount: number
 }
 
-export type cell = {
+export type cellType = {
     isRevealed: boolean,
     isMine: boolean,
     isFlagged: number,

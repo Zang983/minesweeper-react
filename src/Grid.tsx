@@ -7,7 +7,14 @@ function Grid() {
     const status = useGameStore((state) => state.status);
     const grid = useGameStore((state) => state.grid) ?? new Array(height * width).fill({})
 
-    const handleLeftClick = (index: number) => {
+    const sliceGrid = () => {
+        const lines = []
+        for (let i = 0; i < grid.length; i++)
+            lines.push(grid.slice(i * width, (i + 1) * width))
+        return lines
+    }
+
+    const handleLeftClick = (index: number,chordMode?:boolean) => {
         useGameStore.getState().setOnLeftClickOn(true)
         if (status === "idle") {
             useGameStore.getState().setNewGrid(index);
@@ -21,13 +28,15 @@ function Grid() {
                 useGameStore.getState().suggestCells(index);
             useGameStore.getState().revealCell(index)
             useGameStore.getState().checkWin()
+            if(chordMode)  (
+                useGameStore.getState().chordMode(index)
+            )
         }
     }
 
     return (
         <section
-            className="flex flex-wrap"
-            style={{width: `${width * 40}px`}}
+            className="flex flex-col w-fit"
             onMouseUp={() => {
                 useGameStore.getState().clearSuggestedCells()
                 useGameStore.getState().setOnLeftClickOn(false)
@@ -38,12 +47,18 @@ function Grid() {
             }}
         >
             {
-                grid.map((_, index) =>
-                    <Cell key={index} index={index} handleLeftClick={handleLeftClick}/>
+                sliceGrid().map((line, lineIndex) =>
+                    <div className="flex flex-wrap" key={lineIndex}>
+                        {
+                            line.map((_, cellIndex) => <Cell key={cellIndex} index={cellIndex + lineIndex * width}
+                                                             handleLeftClick={handleLeftClick}/>)
+                        }
+                    </div>
                 )
             }
         </section>
-    );
+    )
+        ;
 }
 
 export default Grid;

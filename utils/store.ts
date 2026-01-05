@@ -35,7 +35,7 @@ export const useGameStore = create<Store>()((set) => ({
     },
     setNewGrid: (index: number) => set(state => ({grid: gridGenerator(index, state.height, state.width, state.mineCount)})),
     setCellFlag: (index: number) => set(state => {
-        if (!state.grid) return {...state}
+        if (!state.grid || state.grid[index].isRevealed) return {...state}
 
         const newFlagged = state.grid[index].isFlagged + 1 > 2 ? 0 : state.grid[index].isFlagged + 1
         state.grid[index] = {...state.grid[index], isFlagged: newFlagged}
@@ -45,14 +45,11 @@ export const useGameStore = create<Store>()((set) => ({
     }),
     revealCell: (index: number) => set(state => {
         let counter = 0
-
         const recursiveReveal = (idx: number) => {
-
-            if (!state.grid || state.grid[idx].isRevealed) return
+            if (!state.grid || state.grid[idx].isRevealed || state.grid[idx].isFlagged) return
             if (state.grid[idx].isMine) {
                 set({status: "lost"})
                 state.grid[idx] = {...state.grid[idx], isRevealed: true}
-                // return {grid: newGrid}
             }
             state.grid[idx] = {...state.grid[idx], isRevealed: true}
             counter++
@@ -63,6 +60,22 @@ export const useGameStore = create<Store>()((set) => ({
         }
         recursiveReveal(index)
         return {caseRevealed: state.caseRevealed + counter}
+    }),
+    chordMode: (index: number) => set((state) => {
+        if (!state.grid || state.status === "lost") return {...state}
+        const neighbors = cellNeighbors(index, state.height, state.width)
+
+        const neighborsFlaggedCount = neighbors.filter(cell => state.grid![cell].isFlagged).length
+        if (neighborsFlaggedCount >= state.grid![index].adjacentMineCount) {
+            if (neighbors.filter(cell => (state.grid![cell].isMine && !state.grid![cell].isFlagged)).length > 0) {
+                console.log("y'a une mine non révélée & non flaggé")
+                return {...state, status: "lost"}
+            }
+            for (const neighborUnrevealed of neighbors.filter(cell => !state.grid![cell].isRevealed)) {
+                state.revealCell(neighborUnrevealed)
+            }
+        }
+        return {...state}
     }),
     setStatus: (status: GameStatus) => set({status: status}),
     checkWin: () => set(state => {
@@ -81,8 +94,7 @@ export const useGameStore = create<Store>()((set) => ({
     }),
     suggestCells: (index: number) => set(state => {
         if (!state.grid || state.status === "lost" || !state.leftClickOn) return {...state}
-
-        const neighbors = cellNeighbors(index, state.height, state.width).filter(cell => !state.grid![cell].isRevealed)
+        const neighbors = cellNeighbors(index, state.height, state.width).filter(cell => (!state.grid![cell].isRevealed && !state.grid![cell].isFlagged))
         for (const neighborIdx of neighbors) {
             if (state.grid[neighborIdx].isRevealed) continue;
             state.grid[neighborIdx] = {
