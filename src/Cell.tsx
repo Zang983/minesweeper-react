@@ -7,6 +7,7 @@ type CellProps = {
 }
 
 const Cell = memo(({index, handleLeftClick}: CellProps) => {
+console.log("jsuis rendu")
     const gameStatus = useGameStore((state) => state.status)
     const cell = useGameStore((state) => {
         if (state.grid)
@@ -68,11 +69,11 @@ const Cell = memo(({index, handleLeftClick}: CellProps) => {
                 useGameStore.getState().clearSuggestedCells()
             }}
 
-            className={`aspect-square flex flex-1 items-center justify-center select-none font-black text-2xl
+            className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 aspect-square flex items-center justify-center select-none font-black text-sm sm:text-lg md:text-2xl
                 relative -mr-px -mb-px box-border border-[#808080] border
                 ${isRevealed || shouldShowAsPressed
                 ? "bg-[#c0c0c0]"
-                : "bg-[#c0c0c0] shadow-[inset_3px_3px_0px_#fff,inset_-3px_-3px_0px_#808080]"}
+                : "bg-[#c0c0c0] shadow-[inset_2px_2px_0px_#fff,inset_-2px_-2px_0px_#808080] md:shadow-[inset_3px_3px_0px_#fff,inset_-3px_-3px_0px_#808080]"}
                 ${isRevealed && isMine ? "bg-red-600!" : ""}
             `}
         >

@@ -44,7 +44,7 @@ function GameOptions() {
     };
 
     return (
-        <div className="bg-[#c0c0c0] p-2 md:p-3 border-t-[3px] border-l-[3px] border-white border-r-[3px] border-b-[3px] border-r-[#808080] border-b-[#808080] w-full select-none">
+        <div className="flex flex-col">
             {/* Barre de Status (Compteur - Smiley - Timer) */}
             <div className="flex justify-between items-center bg-[#c0c0c0] border-[3px] border-t-[#808080] border-l-[#808080] border-r-white border-b-white p-2 mb-3 h-16">
                 <div className="bg-black px-2 py-1 border-2 border-gray-600 flex items-center justify-center min-w-12.5 md:min-w-17.5">

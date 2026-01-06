@@ -9,7 +9,7 @@ function Grid() {
 
     const sliceGrid = () => {
         const lines = []
-        for (let i = 0; i < grid.length; i++)
+        for (let i = 0; i < height; i++)
             lines.push(grid.slice(i * width, (i + 1) * width))
         return lines
     }
@@ -36,7 +36,7 @@ function Grid() {
 
     return (
         <section
-            className="flex flex-col w-full"
+            className="flex flex-col w-fit border-t-[3px] border-l-[3px] border-[#808080] border-r-white border-b-white overflow-hidden"
             onMouseUp={() => {
                 useGameStore.getState().clearSuggestedCells()
                 useGameStore.getState().setOnLeftClickOn(false)
@@ -48,7 +48,7 @@ function Grid() {
         >
             {
                 sliceGrid().map((line, lineIndex) =>
-                    <div className="flex flex-wrap w-full" key={lineIndex}>
+                    <div className="flex" key={lineIndex}>
                         {
                             line.map((_, cellIndex) =>
                                 <Cell key={cellIndex}

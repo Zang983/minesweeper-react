@@ -23,10 +23,10 @@ function Timer() {
                 clearInterval(timer)
         }
     }, [status]);
-    
-    const time = gameStore().timer.toString().padStart(3, '0');
+
+    const time = gameStore(state => state.timer).toString().padStart(3, '0');
     return (
-        <div className="text-[#ff0000] font-mono text-3xl leading-none tracking-widest">
+        <div className="text-[#ff0000] font-mono text-2xl md:text-3xl leading-none tracking-widest">
             {time}
         </div>
     );
