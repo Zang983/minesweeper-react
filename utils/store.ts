@@ -1,8 +1,25 @@
 import {create} from 'zustand'
-import type {GameStatus, Store} from "./types";
+import type {cellType, GameStatus, Store} from "./types";
 import gridGenerator from "./gridGenerator.ts";
 import cellNeighbors from "./cellNeighbors.ts";
 import {gameConfigs} from "./gameConfigs.ts";
+
+
+const recursiveReveal = (index: number, newGrid: cellType[], height: number, width: number): number => {
+    if (!newGrid || newGrid[index].isRevealed || newGrid[index].isFlagged) return 0
+
+    newGrid[index] = {...newGrid[index], isRevealed: true}
+    let counter = 1
+
+    if (newGrid[index].adjacentMineCount === 0) {
+        const neighbors = cellNeighbors(index, height, width)
+        for (const neighborIdx of neighbors) {
+            counter += recursiveReveal(neighborIdx, newGrid, height, width)
+        }
+    }
+    return counter
+}
+
 
 export const useGameStore = create<Store>()((set) => ({
     height: gameConfigs.intermediate.height,
@@ -27,9 +44,15 @@ export const useGameStore = create<Store>()((set) => ({
         suggestedCells: []
     }))),
     setGridOptions: (options) => {
-        set((state) => {
-            state.resetGrid()
+        set(() => {
             return {
+                grid: null,
+                status: "idle",
+                flagCount: 0,
+                caseRevealed: 0,
+                timer: 0,
+                lastIndexClicked: null,
+                suggestedCells: [],
                 ...options,
             }
         });
@@ -39,44 +62,40 @@ export const useGameStore = create<Store>()((set) => ({
         if (!state.grid || state.grid[index].isRevealed) return {...state}
 
         const newFlagged = state.grid[index].isFlagged + 1 > 2 ? 0 : state.grid[index].isFlagged + 1
-        state.grid[index] = {...state.grid[index], isFlagged: newFlagged}
+        const newGrid = [...state.grid]
+        newGrid[index] = {...newGrid[index], isFlagged: newFlagged}
         return {
+            grid: newGrid,
             flagCount: newFlagged === 1 ? state.flagCount + 1 : newFlagged === 2 ? state.flagCount - 1 : state.flagCount
         }
     }),
     revealCell: (index: number) => set(state => {
-        let counter = 0
-        const recursiveReveal = (idx: number) => {
-            if (!state.grid || state.grid[idx].isRevealed || state.grid[idx].isFlagged) return
-            if (state.grid[idx].isMine) {
-                set({status: "lost"})
-                state.grid[idx] = {...state.grid[idx], isRevealed: true}
-            }
-            state.grid[idx] = {...state.grid[idx], isRevealed: true}
-            counter++
-            if (state.grid[idx].adjacentMineCount === 0) {
-                const neighbors = cellNeighbors(idx, state.height, state.width)
-                neighbors.forEach(neighborIdx => recursiveReveal(neighborIdx))
-            }
+        if (!state.grid) return {...state}
+        if (state.grid[index].isMine) {
+            const newGrid = [...state.grid]
+            newGrid[index] = {...newGrid[index], isRevealed: true}
+            return {status: "lost", grid: newGrid}
         }
-        recursiveReveal(index)
-        return {caseRevealed: state.caseRevealed + counter}
+        const newGrid = [...state.grid]
+        const counter = recursiveReveal(index, newGrid, state.height, state.width)
+        return {grid: newGrid, caseRevealed: state.caseRevealed + counter}
     }),
     chordMode: (index: number) => set((state) => {
         if (!state.grid || state.status === "lost") return {...state}
+        const newGrid = [...state.grid]
         const neighbors = cellNeighbors(index, state.height, state.width)
+        let counter = 0
 
         const neighborsFlaggedCount = neighbors.filter(cell => state.grid![cell].isFlagged).length
         if (neighborsFlaggedCount >= state.grid![index].adjacentMineCount) {
             if (neighbors.filter(cell => (state.grid![cell].isMine && !state.grid![cell].isFlagged)).length > 0) {
-                console.log("y'a une mine non révélée & non flaggé")
-                return {...state, status: "lost"}
+                return {...state, status: "lost", grid: newGrid}
             }
             for (const neighborUnrevealed of neighbors.filter(cell => !state.grid![cell].isRevealed)) {
-                state.revealCell(neighborUnrevealed)
+                counter += recursiveReveal(neighborUnrevealed, newGrid, state.height, state.width)
             }
         }
-        return {...state}
+        return {...state, caseRevealed: state.caseRevealed + counter, grid: newGrid}
     }),
     setStatus: (status: GameStatus) => set({status: status}),
     checkWin: () => set(state => {
@@ -89,21 +108,25 @@ export const useGameStore = create<Store>()((set) => ({
     }),
     clearSuggestedCells: () => set(state => {
         if (!state.grid) return {...state}
-        for (const previousSuggested of state.suggestedCells)
-            state.grid[previousSuggested] = {...state.grid[previousSuggested], isSuggested: false}
-        return {suggestedCells: []}
+        const newGrid = [...state.grid]
+        for (const previousSuggested of state.suggestedCells) {
+            newGrid[previousSuggested] = {...newGrid[previousSuggested], isSuggested: false}
+        }
+
+        return {suggestedCells: [], grid: newGrid}
     }),
     suggestCells: (index: number) => set(state => {
         if (!state.grid || state.status === "lost" || !state.leftClickOn) return {...state}
         const neighbors = cellNeighbors(index, state.height, state.width).filter(cell => (!state.grid![cell].isRevealed && !state.grid![cell].isFlagged))
+        const newGrid = [...state.grid]
         for (const neighborIdx of neighbors) {
-            if (state.grid[neighborIdx].isRevealed) continue;
-            state.grid[neighborIdx] = {
-                ...state.grid[neighborIdx],
-                isSuggested: !state.grid[neighborIdx].isRevealed && true
+            if (newGrid[neighborIdx].isRevealed) continue;
+            newGrid[neighborIdx] = {
+                ...newGrid[neighborIdx],
+                isSuggested: !newGrid[neighborIdx].isRevealed && true
             }
         }
-        return {suggestedCells: neighbors}
+        return {suggestedCells: neighbors, grid: newGrid}
     }),
     setOnLeftClickOn: (value: boolean) => set({leftClickOn: value})
 

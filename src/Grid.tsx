@@ -5,7 +5,7 @@ function Grid() {
     const height = useGameStore((state) => state.height);
     const width = useGameStore((state) => state.width);
     const status = useGameStore((state) => state.status);
-    const grid = useGameStore((state) => state.grid) ?? new Array(height * width).fill({})
+    const grid =  new Array(height * width).fill({})
 
     const sliceGrid = () => {
         const lines = []
@@ -20,6 +20,7 @@ function Grid() {
             useGameStore.getState().setNewGrid(index);
             useGameStore.getState().setStatus("playing")
             useGameStore.getState().revealCell(index)
+            useGameStore.getState().checkWin()
         }
         if (status === "playing") {
             if (grid[index].isFlagged > 0)
