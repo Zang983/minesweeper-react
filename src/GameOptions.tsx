@@ -9,8 +9,7 @@ function GameOptions() {
     const height = useGameStore((state) => state.height);
     const width = useGameStore((state) => state.width);
     const mines = useGameStore((state) => state.mineCount);
-    const setGridOptions = useGameStore((state) => state.setGridOptions);
-    const resetGrid = useGameStore((state) => state.resetGrid);
+    const initGrid = useGameStore((state) => state.initGrid);
 
     const [isCustomVisible, setIsCustomVisible] = useState(false);
     const [gameOptions, setGameOptions] = useState({
@@ -25,13 +24,13 @@ function GameOptions() {
         { key: "expert", label: "Expert" }
     ];
 
-    const handleDifficultyChange = (level: string) => {
+    const handleDifficultyChange = (level?: string) => {
         if (level === "custom") {
             setIsCustomVisible(true);
         } else {
             setIsCustomVisible(false);
             const config = gameConfigs[level as keyof typeof gameConfigs];
-            setGridOptions(config);
+            initGrid(config);
         }
     };
 
@@ -52,7 +51,7 @@ function GameOptions() {
                 </div>
 
                 <button
-                    onClick={resetGrid}
+                    onClick={()=>initGrid()}
                     className="w-10 h-10 md:w-12 md:h-12 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2  active:border-none text-2xl md:text-3xl flex items-center justify-center hover:bg-[#d0d0d0]"
                 >
                     {getStatusEmoji()}
@@ -111,7 +110,7 @@ function GameOptions() {
                         </div>
                     </div>
                     <button
-                        onClick={() => setGridOptions(gameOptions)}
+                        onClick={() => initGrid(gameOptions)}
                         className="bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2  py-1 active:border-none font-bold uppercase tracking-wider"
                     >
                         Appliquer

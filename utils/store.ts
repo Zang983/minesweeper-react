@@ -34,16 +34,7 @@ export const useGameStore = create<Store>()((set) => ({
     leftClickOn: false,
     timer: 0,
 
-    resetGrid: () => set(() => (({
-        grid: null,
-        status: "idle",
-        flagCount: 0,
-        caseRevealed: 0,
-        timer: 0,
-        lastIndexClicked: null,
-        suggestedCells: []
-    }))),
-    setGridOptions: (options) => {
+    initGrid: (options) => {
         set(() => {
             return {
                 grid: null,
